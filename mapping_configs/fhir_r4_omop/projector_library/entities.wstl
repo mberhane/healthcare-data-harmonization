@@ -1,0 +1,123 @@
+// Description: Converts FHIR R4 terminology into OMOP (v6.0) terminology
+//
+// Argument(s):
+//   FHIR CodeableConcept datatype: https://www.hl7.org/fhir/datatypes.html#CodeableConcept
+// Output(s):
+//   conceptID:  https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedVocabularies/CONCEPT.md
+//   system: System of the source code specified in the concept map (https://build.fhir.org/conceptmap-definitions.html#ConceptMap.group.source).
+//
+def Convert_Terminology(conceptID, system){
+  var mapping : $HarmonizeCode("$Local", NumToStr(conceptID), system, "FHIR-R4-OMOP-ConceptMap");
+  coding : mapping;
+}
+
+// Description: Converts FHIR R4 terminology into OMOP (v6.0) terminology
+//
+// Argument(s):
+//   conceptID:  https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedVocabularies/CONCEPT.md
+//   system: System of the source code specified in the concept map (https://build.fhir.org/conceptmap-definitions.html#ConceptMap.group.source).
+//
+// Output(s):
+//   FHIR Coding datatype: https://www.hl7.org/fhir/datatypes.html#Coding
+//
+def Convert_TerminologyCoding(conceptID, system){
+  var mapping : $HarmonizeCode("$Local", NumToStr(conceptID), system, "FHIR-R4-OMOP-ConceptMap");
+  $this : mapping[0];
+}
+
+// Description: Converts FHIR R4 terminology into OMOP (v6.0) terminology
+//
+// Argument(s):
+//   conceptID:  https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedVocabularies/CONCEPT.md
+//   system: System of the source code specified in the concept map (https://build.fhir.org/conceptmap-definitions.html#ConceptMap.group.source).
+//
+// Output(s):
+//   FHIR Code datatype: https://www.hl7.org/fhir/datatypes.html#code
+//
+def Convert_TerminologyCode(conceptID, system){
+  var mapping : $HarmonizeCode("$Local", NumToStr(conceptID), system, "FHIR-R4-OMOP-ConceptMap");
+  $this : mapping[0].code;
+}
+
+def NumToStr(Obj){
+  $this : $StrFmt("%d", Obj);
+}
+
+// Description: Constructs a OMOP Person (v6.0) Table based on FHIR R4 Patient Resource
+//
+// Argument(s):
+//   Patient: https://www.hl7.org/fhir/patient.html
+//
+// Output(s):
+//   Person: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedClinicalDataTables/PERSON.md
+//
+def Patient_Person(Patient) {
+  person_id : Patient.id;
+  person_source_value : Patient.identifier[0].value;
+  first_name : Patient.name[0].given[0];
+  last_name : Patient.name[0].family;
+  gender_concept_id : Convert_TerminologyCode(Patient.gender, "Gender");
+  birth_datetime : Patient.birthDate;
+  var race : Patient.extension[where $.url = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race"];
+  race_concept_id : Convert_Terminology_With_Target(race[0].extension[0].valueCoding.code, race[0].extension[0].valueCoding.system, "Race");
+  race_source_value : race[0].extension[0].valueCoding.display;
+  race_source_concept_id : Convert_Terminology_With_Target(race[0].extension[0].valueCoding.code, race[0].extension[0].valueCoding.system, "Race");
+  var ethnicity : Patient.extension[where $.url = "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity"];
+  ethnicity_concept_id : Convert_Terminology_With_Target(ethnicity[0].extension[0].valueCoding.code, ethnicity[0].extension[0].valueCoding.system, "Ethnicity");
+  ethnicity_source_value : ethnicity[0].extension[0].valueCoding.display;
+  ethnicity_source_concept_id : Convert_Terminology_With_Target(ethnicity[0].extension[0].valueCoding.code, ethnicity[0].extension[0].valueCoding.system, "Ethnicity");
+  provider_id : Build_Reference("Practitioner", Patient.generalPractitioner[0]);
+  care_site_id : Build_Reference("Organization", Patient.managingOrganization);
+}
+
+// Description: Constructs a OMOP Location Table (v6.0) based on FHIR R4 Address Datatype
+//
+// Argument(s):
+//   Location: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedHealthSystemDataTables/LOCATION.md
+//   
+//
+// Output(s):
+//   Address: http://hl7.org/fhir/datatypes.html#Address 
+//
+def Address_Location(Address) {
+  address_1 : Address.line[0];
+  address_2 : Address.line[1];
+  city : Address.city;
+  state : Address.state;
+  zip : Address.postalCode;
+  county : Address.district;
+  country : Address.country;
+  location_source_value : Address.text;
+}
+
+// Description: Constructs an OMOP ConditionOccurence Table (v6.0) based on FHIR R4 Condition Resource
+//
+// Argument(s):
+//   Condition: https://www.hl7.org/fhir/condition.html
+// Output(s):
+//   ConditionOccurence: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedClinicalDataTables/CONDITION_OCCURRENCE.md 
+def Condition_ConditionOccurence(Condition) {
+  condition_occurrence_id : Condition.id;
+  person_id (if Extract_ReferenceName(Condition.subject.reference) = "Patient") : Extract_ReferenceID(Condition.subject.reference);
+  condition_concept_id : Convert_Terminology(Condition.code.coding[0].code, Condition.code.coding[0].system);
+  if (Condition.onsetPeriod) {
+    condition_start_date : Extract_Date(Condition.onsetPeriod.start);
+    condition_start_datetime : Condition.onsetPeriod.start
+    condition_end_date : Extract_Date(Condition.onsetPeriod.end);
+    condition_end_datetime : Condition.onsetPeriod.end
+  }
+  if (Condition.onsetDateTime) {
+    condition_start_date : Extract_Date(Condition.onsetDateTime);
+    condition_start_datetime : Condition.onsetDateTime
+  }
+  condition_type_concept_id : Convert_Terminology(Condition.category[0].coding[0].code, Condition.category[0].coding[0].system);
+  stop_reason : Condition.abatementString;
+  provider_id (if Extract_ReferenceName(Condition.asserter.reference) = "Practitioner") : Extract_ReferenceID(Condition.asserter.reference);
+  visit_occurrence_id (if Extract_ReferenceName(Condition.context.reference) = "Encounter") : Extract_ReferenceID(Condition.context.reference);
+  condition_source_value : Condition.code.coding[0].display;
+  condition_source_concept_id : Convert_Terminology(Condition.code.coding[0].code, Condition.code.coding[0].system);
+  condition_status_concept_id : Convert_Terminology(Condition.clinicalStatus.coding[0].code, Condition.clinicalStatus.coding[0].system);
+
+}
+
+

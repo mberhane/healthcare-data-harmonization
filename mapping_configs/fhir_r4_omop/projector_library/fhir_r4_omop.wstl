@@ -1,0 +1,12 @@
+// Description: Define FHIR R4 Transformation to OMOP (v6.0)
+//
+// Argument(s): Each of the following FHIR R4 resources
+//   Patient: https://www.hl7.org/fhir/patient.html
+//
+// Output(s): Each of the following OMOP (v6.0) tables
+//   Person: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedClinicalDataTables/PERSON.md
+//   Location: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedHealthSystemDataTables/LOCATION.md
+//
+def FHIR_R4_OMOP(resource) {
+  $this (if resource.resourceType = "Patient") : Process_Patient(resource);
+}

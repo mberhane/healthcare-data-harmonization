@@ -1,0 +1,24 @@
+// Description: Define FHIR R4 to OMOP (v6.0) transformation
+//
+// Argument(s):
+//   Patient: https://www.hl7.org/fhir/patient.html
+// Output(s):
+//   Location: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedHealthSystemDataTables/LOCATION.md
+//   Person: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedClinicalDataTables/PERSON.md
+//
+def Process_Patient(Patient) {
+  var location : Address_Location(Patient.address[0]);
+  location : location;
+  person : Patient_Person(Patient, location.location_id);
+}
+
+// Description: Define FHIR R4 to OMOP (v6.0) transformation
+//
+// Argument(s):
+//    Condition: https://www.hl7.org/fhir/condition.html
+// Output(s):
+//   ConditionOccurence:  https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedClinicalDataTables/CONDITION_OCCURRENCE.md
+//
+def Process_Condition(Condition) {
+    condition_occurence: Condition_ConditionOccurence(Condition);
+}
