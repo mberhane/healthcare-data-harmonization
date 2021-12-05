@@ -1,0 +1,25 @@
+{
+  "location": {
+    "address_1": "706 Weissnat Parade Unit 64",
+    "city": "Taunton",
+    "country": "US",
+    "state": "Massachusetts",
+    "zip": "02718"
+  },
+  "person": {
+    "birth_datetime": "2003-07-05",
+    "care_site_id": 3189841398,
+    "ethnicity_concept_id": "38003564",
+    "ethnicity_source_concept_id": "38003564",
+    "ethnicity_source_value": "Not Hispanic or Latino",
+    "gender_concept_id": "8507",
+    "gender_source_concept_id": "8507",
+    "gender_source_value": "male",
+    "person_id": "21017ee2-e3f8-4148-912a-a922fe6d182a",
+    "person_source_value": "2f2be27f-0598-4d69-84a6-32d28d7ad600",
+    "provider_id": 3189841398,
+    "race_concept_id": "8527",
+    "race_source_concept_id": "8527",
+    "race_source_value": "White"
+  }
+}
