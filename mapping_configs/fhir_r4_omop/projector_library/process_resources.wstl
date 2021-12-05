@@ -23,3 +23,21 @@ def Process_Condition(Condition) {
     condition_occurence: Condition_ConditionOccurence(Condition);
 }
 
+def Convert_R4_Terminology(Code, System){
+  var mapping : $HarmonizeCode("$Local", Code, System, "FHIR-R4-OMOP-ConceptMap");
+  if (mapping[0].system = "FHIR-R4-OMOP-ConceptMap-unharmonized") {
+    $this : "";
+  } else {
+    $this : (mapping[0].code);
+  }
+}
+
+def Convert_R4_Terminology_With_Target(Code, System, Target){
+  var mapping : $HarmonizeCodeWithTarget("$Local", Code, System, Target, "FHIR-R4-OMOP-ConceptMap");
+  if (mapping[0].system = "FHIR-R4-OMOP-ConceptMap-unharmonized") {
+    $this : "";
+  } else {
+    $this : (mapping[0].code);
+  }
+}
+

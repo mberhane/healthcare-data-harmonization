@@ -9,4 +9,5 @@
 //
 def FHIR_R4_OMOP(resource) {
   $this (if resource.resourceType = "Patient") : Process_Patient(resource);
+  $this (if resource.resourceType = "Condition") : Process_Condition(resource);
 }
