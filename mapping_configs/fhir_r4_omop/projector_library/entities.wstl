@@ -56,6 +56,31 @@ def Extract_R4_ReferenceID(str) {
   $this: $IntHash(temp[1]);
 }
 
+// Description: Extracts a Reference Resource Name from a FHIR Reference datatype
+//
+// Argument(s):
+//   FHIR Reference datatype: https://www.hl7.org/fhir/references-definitions.html#Reference.reference
+//
+// Output(s):
+//   FHIR Reference Resource Name: https://www.hl7.org/fhir/references-definitions.html#Reference.reference
+//
+def Extract_R4_ReferenceName(str) {
+  var temp: $StrSplit(str, "/");
+  $this: temp[0];
+}
+
+// Description: Extracts a date in OMOP format from a FHIR DateTime datatype
+//
+// Argument(s):
+//   FHIR DateTime datatype: https://www.hl7.org/fhir/datatypes.html#dateTime
+//
+// Output(s):
+//   OMOP Date datatype: SQL datetime
+//
+def Extract_R4_Date(str) {
+   $this: $ReformatTime("2006-01-02T15:04:05Z07:00", str, "2006-01-02");
+}
+
 // Description: Constructs a OMOP Person (v6.0) Table based on FHIR R4 Patient Resource
 //
 // Argument(s):
@@ -111,22 +136,22 @@ def Address_Location(Address) {
 //   ConditionOccurence: https://github.com/OHDSI/CommonDataModel/blob/v6.0.0/Documentation/CommonDataModel_Wiki_Files/StandardizedClinicalDataTables/CONDITION_OCCURRENCE.md 
 def Condition_ConditionOccurence(Condition) {
   condition_occurrence_id : Condition.id;
-  person_id (if Extract_ReferenceName(Condition.subject.reference) = "Patient") : Extract_R4_ReferenceID(Condition.subject.reference);
+  person_id (if Extract_R4_ReferenceName(Condition.subject.reference) = "Patient") : Extract_R4_ReferenceID(Condition.subject.reference);
   condition_concept_id : Convert_R4_Terminology(Condition.code.coding[0].code, Condition.code.coding[0].system);
   if (Condition.onsetPeriod) {
-    condition_start_date : Extract_Date(Condition.onsetPeriod.start);
+    condition_start_date : Extract_R4_Date(Condition.onsetPeriod.start);
     condition_start_datetime : Condition.onsetPeriod.start
-    condition_end_date : Extract_Date(Condition.onsetPeriod.end);
+    condition_end_date : Extract_R4_Date(Condition.onsetPeriod.end);
     condition_end_datetime : Condition.onsetPeriod.end
   }
   if (Condition.onsetDateTime) {
-    condition_start_date : Extract_Date(Condition.onsetDateTime);
+    condition_start_date : Extract_R4_Date(Condition.onsetDateTime);
     condition_start_datetime : Condition.onsetDateTime
   }
   condition_type_concept_id : Convert_R4_Terminology(Condition.category[0].coding[0].code, Condition.category[0].coding[0].system);
   stop_reason : Condition.abatementString;
-  provider_id (if Extract_ReferenceName(Condition.asserter.reference) = "Practitioner") : Extract_R4_ReferenceID(Condition.asserter.reference);
-  visit_occurrence_id (if Extract_ReferenceName(Condition.context.reference) = "Encounter") : Extract_R4_ReferenceID(Condition.context.reference);
+  provider_id (if Extract_R4_ReferenceName(Condition.asserter.reference) = "Practitioner") : Extract_R4_ReferenceID(Condition.asserter.reference);
+  visit_occurrence_id (if Extract_R4_ReferenceName(Condition.context.reference) = "Encounter") : Extract_R4_ReferenceID(Condition.context.reference);
   condition_source_value : Condition.code.coding[0].display;
   condition_source_concept_id : Convert_R4_Terminology(Condition.code.coding[0].code, Condition.code.coding[0].system);
   condition_status_concept_id : Convert_R4_Terminology(Condition.clinicalStatus.coding[0].code, Condition.clinicalStatus.coding[0].system);
