@@ -1,0 +1,10 @@
+Follow the following instructions to run this application:
+1. Install Golang on your machine following the instructions here https://go.dev/doc/install 
+2. Install protobug compiler on your local machine following the instructions here: https://github.com/protocolbuffers/protobuf/releases/tag/v3.11.4 
+3. Clone the repo https://github.com/mberhane/healthcare-data-harmonization
+4. Navigate to the mapping_engine directory
+5. Execute ./build.sh
+6. Navigate to mapping_engine/main directory
+7. Execute the following command: go run . -input_file_spec $REPO_PATH/mapping_configs/fhir_r4_omop/condition.input.json -data_harmonization_config_file_spec $REPO_PATH/mapping_configs/fhir_r4_omop/configurations/main.textproto ,
+with $REPO_PATH being the top level of the git repository.
+8. Switch input_file_spec with any FHIR Resource JSON you would like to test.
